@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>AI问答</title>
+    <script src="https://cdn.staticfile.org/vue/3.0.5/vue.global.js"></script>
+</head>
+
+<body>
+    <div id="app">
+        <input type="text" v-model="input1">
+        <button @click="fetchData">AI回答</button>
+        <h2>回答: </h2>
+        <p>{{ message }}</p>
+    </div>
+
+
+
+    <script>
+        const app = {
+            data() {
+                return {
+                    input1: '',
+                    message: '你问，我答！'
+                }
+            },
+            methods: {
+                async fetchData() {
+                    try {
+                        var myHeaders = new Headers();
+                        myHeaders.append("Content-Type", "application/json");
+                        myHeaders.append("Accept", "*/*");
+                        myHeaders.append("Host", "aip.baidubce.com");
+                        myHeaders.append("Connection", "keep-alive");
+
+                        var raw = JSON.stringify({
+                            "messages": [
+                                {
+                                    "role": "user",
+                                    "content": this.input1 + ", 尽量简单陈述。"
+                                }
+                            ],
+                            "temperature": 0.95,
+                            "top_p": 0.8,
+                            "penalty_score": 1,
+                            "disable_search": false,
+                            "enable_citation": false,
+                            "response_format": "text"
+                        });
+
+                        var requestOptions = {
+                            method: 'POST',
+                            headers: myHeaders,
+                            body: raw,
+                            redirect: 'follow'
+                        };
+                        const response = await fetch(
+                            'https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie_speed?access_token=24.d1de98010597eb58bd3cd44d537938c2.2592000.1723729042.282335-95171169',
+                            requestOptions
+                        );
+
+                        if (!response.ok) {
+                            // 检查响应是否成功
+                            throw new Error('Network response was not ok');
+                        }
+
+                        const result = await response.json(); // 或者 response.json() 如果响应是 JSON
+                        this.message = result["result"];
+                        this.error = ''; // 清除之前的错误信息
+                    } catch (error) {
+                        // 处理任何在请求过程中抛出的错误
+                        console.error('Error fetching data:', error);
+                        this.error = error.message; // 将错误信息设置到组件的数据中
+                        this.message = ''; // 清除之前的数据
+                    }
+                },
+            }
+        }
+
+        Vue.createApp(app).mount('#app')
+    </script>
+</body>
+
+</html>
